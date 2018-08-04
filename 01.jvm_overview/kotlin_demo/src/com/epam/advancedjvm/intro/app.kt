@@ -7,7 +7,6 @@ John
 Doe
 """, null)
     print("Hello, world from ${person.firstName} ${person.lastName?.length}")
-
     Thread.sleep(200000)
 }
 
