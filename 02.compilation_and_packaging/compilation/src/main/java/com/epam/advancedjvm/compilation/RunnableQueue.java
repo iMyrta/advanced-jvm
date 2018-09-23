@@ -2,6 +2,9 @@ package com.epam.advancedjvm.compilation;
 
 import java.util.LinkedList;
 
+/**
+ * Use javap -c or IntelliJ bytecode viewer
+ */
 public class RunnableQueue extends LinkedList<Runnable> {
 
     @Override

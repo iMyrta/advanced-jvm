@@ -1,5 +1,8 @@
 package com.epam.advancedjvm.compilation;
 
+/**
+ * Use javap -c or IntelliJ bytecode viewer
+ */
 public class InnerInstanceClasses {
 
     private Inner inner = new Inner("");

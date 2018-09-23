@@ -1,0 +1,1 @@
+maven clean package -e -X -Dprotobuf.bin.path=/Users/ivaylo_pashovepam.com/dev/protoc-3.6.1-osx-x86_64/bin

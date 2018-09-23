@@ -13,6 +13,7 @@
         <module>processor</module>
         <module>data</module>
         <module>legacy</module>
+        <module>serialize</module>
     </modules>
 
 
