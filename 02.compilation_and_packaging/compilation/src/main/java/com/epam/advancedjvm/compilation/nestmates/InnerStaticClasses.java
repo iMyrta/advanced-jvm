@@ -1,4 +1,4 @@
-package com.epam.advancedjvm.compilation;
+package com.epam.advancedjvm.compilation.nestmates;
 
 /**
  * Use javap -c or IntelliJ bytecode viewer

@@ -1,4 +1,4 @@
-package com.epam.advancedjvm.compilation;
+package com.epam.advancedjvm.compilation.generics;
 
 import java.util.Arrays;
 import java.util.List;

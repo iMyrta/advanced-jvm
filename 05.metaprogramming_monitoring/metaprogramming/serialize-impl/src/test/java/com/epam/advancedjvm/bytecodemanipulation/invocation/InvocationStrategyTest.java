@@ -4,9 +4,8 @@ import com.epam.advancedjvm.metaprogramming.invocation.bytecodemanipulation.Clas
 import com.epam.advancedjvm.metaprogramming.invocation.lambdametafactory.LambdaMetaFactoryInvocationStrategy;
 import com.epam.advancedjvm.metaprogramming.invocation.methodhandle.MethodHandleInvocationStrategy;
 import com.epam.advancedjvm.metaprogramming.invocation.reflection.ReflectionInvocationStrategy;
-import com.epam.advancedjvm.metaprogramming.serialize.AbstractDataConverterRegistry.InvocationStrategy;
+import com.epam.advancedjvm.metaprogramming.serialize.DataConverterRegistryImpl.InvocationStrategy;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 

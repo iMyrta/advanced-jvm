@@ -4,7 +4,7 @@ import com.epam.advancedjvm.metaprogramming.invocation.bytecodemanipulation.Clas
 import com.epam.advancedjvm.metaprogramming.invocation.lambdametafactory.LambdaMetaFactoryInvocationStrategy;
 import com.epam.advancedjvm.metaprogramming.invocation.methodhandle.MethodHandleInvocationStrategy;
 import com.epam.advancedjvm.metaprogramming.invocation.reflection.ReflectionInvocationStrategy;
-import com.epam.advancedjvm.metaprogramming.serialize.AbstractDataConverterRegistry.InvocationStrategy;
+import com.epam.advancedjvm.metaprogramming.serialize.DataConverterRegistryImpl.InvocationStrategy;
 import org.openjdk.jmh.annotations.*;
 
 import java.lang.reflect.Field;

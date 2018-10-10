@@ -1,7 +1,5 @@
-package com.epam.advancedjvm.bytecodemanipulation.reflection;
+package com.epam.advancedjvm.metaprogramming.serialize;
 
-import com.epam.advancedjvm.annotationsprocessing.serialize.DataConverter;
-import com.epam.advancedjvm.annotationsprocessing.serialize.DataConverterRegistry;
 import com.github.os72.protobuf.dynamic.DynamicSchema;
 import com.github.os72.protobuf.dynamic.MessageDefinition;
 import com.github.os72.protobuf.dynamic.MessageDefinition.Builder;
@@ -11,44 +9,51 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.DynamicMessage;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
 
-public class ReflectionDataConverterRegistry implements DataConverterRegistry {
+public class DataConverterRegistryImpl<F> implements DataConverterRegistry {
 
-    private static final Map<Class<?>, DataConverter<?>> entries = new HashMap<>();
+    private final Map<Class<?>, DataConverter<?>> entries = new HashMap<>();
+
+    private final InvocationStrategy<F> invocationStrategy;
+
+    public DataConverterRegistryImpl(InvocationStrategy<F> invocationStrategy) {
+        this.invocationStrategy = invocationStrategy;
+    }
 
     @SuppressWarnings("unchecked")
     public <T> DataConverter<T> getConverter(Class<T> dataClass) {
-        return (DataConverter<T>) entries.computeIfAbsent(dataClass, key -> new ReflectionDataConverter<>((Class<T>) key));
+        return (DataConverter<T>) entries.computeIfAbsent(dataClass, key -> new ReflectionDataConverter<>(dataClass, invocationStrategy));
     }
 
-    private static class ReflectionDataConverter<T> implements DataConverter<T> {
+    private static class ReflectionDataConverter<T, F> implements DataConverter<T> {
 
         private final String name;
         private final Class<T> dataClass;
         private final DynamicSchema schema;
-        private final List<ReflectionField> fieldsMetadata;
+        private final InvocationStrategy<F> invocationStrategy;
+        private final List<ReflectionField<F>> fieldsMetadata;
 
-        ReflectionDataConverter(Class<T> dataClass) {
+        ReflectionDataConverter(Class<T> dataClass, InvocationStrategy<F> invocationStrategy) {
             this.dataClass = dataClass;
             name = dataClass.getSimpleName();
+            this.invocationStrategy = invocationStrategy;
             List<Field> fields = getAllFields(dataClass);
             schema = generateSchema(dataClass, fields);
-            fieldsMetadata = generateFieldsMetadata(dataClass, fields);
+            fieldsMetadata = generateFieldsMetadata(fields);
         }
 
         public byte[] toBytes(T data) {
             try {
                 DynamicMessage.Builder msgBuilder = schema.newMessageBuilder(name);
-                for (ReflectionField field : fieldsMetadata) {
-                    Object value = field.getter.invoke(data);
+                for (ReflectionField<F> field : fieldsMetadata) {
+                    Object value = invocationStrategy.invokeGetter(field.field, data);
                     if (value != null) {
                         msgBuilder.setField(field.fieldDescriptor, value);
                     }
                 }
                 return msgBuilder.build().toByteArray();
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 throw new IllegalArgumentException("Unsupported data " + data, e);
             }
         }
@@ -57,12 +62,12 @@ public class ReflectionDataConverterRegistry implements DataConverterRegistry {
             try {
                 T instance = dataClass.newInstance();
                 DynamicMessage msg = DynamicMessage.parseFrom(schema.getMessageDescriptor(name), bytes);
-                for (ReflectionField field : fieldsMetadata) {
+                for (ReflectionField<F> field : fieldsMetadata) {
                     Object value = msg.getField(field.fieldDescriptor);
-                    field.setter.invoke(instance, value);
+                    invocationStrategy.invokeSetter(field.field, instance, value);
                 }
                 return instance;
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 throw new IllegalArgumentException("Cannot parse message ", e);
             }
         }
@@ -88,16 +93,16 @@ public class ReflectionDataConverterRegistry implements DataConverterRegistry {
                 Field field = fields.get(i);
                 String fieldName = field.getName();
                 Class<?> fieldType = field.getType();
-                String protobufType;
+                String protoBuffersType;
                 if (fieldType == String.class) {
-                    protobufType = "string";
+                    protoBuffersType = "string";
                 } else if (fieldType == int.class) {
-                    protobufType = "int32";
+                    protoBuffersType = "int32";
                 } else {
                     throw new IllegalArgumentException("Unsupported type " + field);
                 }
 
-                messageDefinitionBuilder.addField("optional", protobufType, fieldName, i + 1);
+                messageDefinitionBuilder.addField("optional", protoBuffersType, fieldName, i + 1);
             }
 
             return messageDefinitionBuilder.build();
@@ -111,34 +116,36 @@ public class ReflectionDataConverterRegistry implements DataConverterRegistry {
             return fields;
         }
 
-        private List<ReflectionField> generateFieldsMetadata(Class<T> dataClass, List<Field> fields) {
+        private List<ReflectionField<F>> generateFieldsMetadata(List<Field> fields) {
 
             Descriptor msgDesc = schema.getMessageDescriptor(name);
 
-            List<ReflectionField> fieldsMetadata = new ArrayList<>();
+            List<ReflectionField<F>> fieldsMetadata = new ArrayList<>();
 
             for (Field field : fields) {
                 String fieldName = field.getName();
                 try {
-                    fieldsMetadata.add(new ReflectionField(
-                            field,
-                            extractGetter(dataClass, field),
-                            extractSetter(dataClass, field),
+                    fieldsMetadata.add(new ReflectionField<>(
+                            invocationStrategy.createFieldAccessor(
+                                    field,
+                                    extractGetter(field),
+                                    extractSetter(field)
+                            ),
                             msgDesc.findFieldByName(fieldName)
                     ));
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     e.printStackTrace();
                 }
             }
             return fieldsMetadata;
         }
 
-        private static Method extractGetter(Class<?> dataClass, Field field) throws NoSuchMethodException {
-            return dataClass.getMethod("get" + toUpperCamelCase(field.getName()));
+        private static String extractGetter(Field field) {
+            return "get" + toUpperCamelCase(field.getName());
         }
 
-        private static Method extractSetter(Class<?> dataClass, Field field) throws NoSuchMethodException {
-            return dataClass.getMethod("set" + toUpperCamelCase(field.getName()), field.getType());
+        private static String extractSetter(Field field) {
+            return "set" + toUpperCamelCase(field.getName());
         }
 
         private static String toUpperCamelCase(String fieldName) {
@@ -150,18 +157,23 @@ public class ReflectionDataConverterRegistry implements DataConverterRegistry {
         }
     }
 
-    private static class ReflectionField {
+    private static class ReflectionField<F> {
 
-        Field field;
-        Method getter;
-        Method setter;
+        F field;
         FieldDescriptor fieldDescriptor;
 
-        ReflectionField(Field field, Method getter, Method setter, FieldDescriptor fieldDescriptor) {
+        ReflectionField(F field, FieldDescriptor fieldDescriptor) {
             this.field = field;
-            this.getter = getter;
-            this.setter = setter;
             this.fieldDescriptor = fieldDescriptor;
         }
+    }
+
+    public interface InvocationStrategy<F> {
+
+        F createFieldAccessor(Field reflectionField, String getterName, String setterName) throws Throwable;
+
+        Object invokeGetter(F field, Object instance) throws Throwable;
+
+        void invokeSetter(F field, Object instance, Object value) throws Throwable;
     }
 }

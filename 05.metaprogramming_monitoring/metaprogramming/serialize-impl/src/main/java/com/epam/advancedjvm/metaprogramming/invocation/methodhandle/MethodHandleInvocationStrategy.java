@@ -1,6 +1,6 @@
 package com.epam.advancedjvm.metaprogramming.invocation.methodhandle;
 
-import com.epam.advancedjvm.metaprogramming.serialize.AbstractDataConverterRegistry.InvocationStrategy;
+import com.epam.advancedjvm.metaprogramming.serialize.DataConverterRegistryImpl.InvocationStrategy;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;

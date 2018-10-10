@@ -1,6 +1,6 @@
 package com.epam.advancedjvm.metaprogramming.invocation.lambdametafactory;
 
-import com.epam.advancedjvm.metaprogramming.serialize.AbstractDataConverterRegistry.InvocationStrategy;
+import com.epam.advancedjvm.metaprogramming.serialize.DataConverterRegistryImpl.InvocationStrategy;
 
 import java.lang.invoke.*;
 import java.lang.invoke.MethodHandles.Lookup;
