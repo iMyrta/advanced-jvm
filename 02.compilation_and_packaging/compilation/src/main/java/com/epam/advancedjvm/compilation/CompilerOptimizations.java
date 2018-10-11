@@ -15,7 +15,7 @@ public class CompilerOptimizations {
     }
 
     public void booleanExpressions2(boolean a, boolean b) {
-        if(!a || !b) {
+        if(!(a && b)) {
             deadCode();
         }
     }

@@ -3,7 +3,7 @@ package com.epam.advancedjvm.annotationsprocessing.data;
 import com.epam.advancedjvm.annotationsprocessing.serialize.Data;
 
 @Data
-public class Person {
+public class Person2 {
 
     private String firstName;
     private String lastName;
