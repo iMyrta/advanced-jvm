@@ -1,0 +1,1 @@
+"C:\Program Files\Java\jdk-10.0.1\bin\java" --module-path ..\assembly -m brewing.factory.impl/brewing.factory.impl.BrewingFactoryMain
