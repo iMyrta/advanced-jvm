@@ -7,6 +7,7 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Field;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 
 public class LambdaMetaFactoryInvocationStrategy implements InvocationStrategy<FieldAccessor> {
 

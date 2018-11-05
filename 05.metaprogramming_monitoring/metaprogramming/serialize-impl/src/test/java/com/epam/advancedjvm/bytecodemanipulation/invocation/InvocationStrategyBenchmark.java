@@ -13,8 +13,9 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Thread)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
-@Warmup(iterations = 15, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
-@Measurement(iterations = 20, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
+@Warmup(iterations = 10, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
+@Measurement(iterations = 10, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
+@Fork(2)
 public class InvocationStrategyBenchmark {
 
     private Data data;
